@@ -19,7 +19,18 @@
 
 namespace sjtu {
 class int2048 {
-  // todo
+private:
+  // little-endian digits in base 1e4; sign: -1,0,1
+  std::vector<int> d;
+  int s; // -1,0,1
+  void trim();
+  static int absCmp(const int2048 &, const int2048 &);
+  static int2048 addAbs(const int2048 &, const int2048 &);
+  static int2048 subAbs(const int2048 &, const int2048 &); // assumes |a|>=|b|
+  static int2048 mulAbs(const int2048 &, const int2048 &);
+  static void divAbs(const int2048 &, const int2048 &, int2048 &, int2048 &);
+  static int2048 fromInt(long long v);
+
 public:
   // 构造函数
   int2048();

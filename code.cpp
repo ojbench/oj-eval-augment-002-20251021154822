@@ -1,4 +1,101 @@
-#include "int2048.h"
+#pragma once
+#ifndef SJTU_BIGINTEGER
+#define SJTU_BIGINTEGER
+
+// Integer 1:
+// 实现一个有符号的大整数类，只需支持简单的加减
+
+// Integer 2:
+// 实现一个有符号的大整数类，支持加减乘除，并重载相关运算符
+
+// 请不要使用除了以下头文件之外的其它头文件
+#include <complex>
+#include <cstdio>
+#include <cstring>
+#include <iostream>
+#include <vector>
+
+// 请不要使用 using namespace std;
+
+namespace sjtu {
+class int2048 {
+private:
+  // little-endian digits in base 1e4; sign: -1,0,1
+  std::vector<int> d;
+  int s; // -1,0,1
+  void trim();
+  static int absCmp(const int2048 &, const int2048 &);
+  static int2048 addAbs(const int2048 &, const int2048 &);
+  static int2048 subAbs(const int2048 &, const int2048 &); // assumes |a|>=|b|
+  static int2048 mulAbs(const int2048 &, const int2048 &);
+  static void divAbs(const int2048 &, const int2048 &, int2048 &, int2048 &);
+  static int2048 fromInt(long long v);
+
+public:
+  // 构造函数
+  int2048();
+  int2048(long long);
+  int2048(const std::string &);
+  int2048(const int2048 &);
+
+  // 以下给定函数的形式参数类型仅供参考，可自行选择使用常量引用或者不使用引用
+  // 如果需要，可以自行增加其他所需的函数
+  // ===================================
+  // Integer1
+  // ===================================
+
+  // 读入一个大整数
+  void read(const std::string &);
+  // 输出储存的大整数，无需换行
+  void print();
+
+  // 加上一个大整数
+  int2048 &add(const int2048 &);
+  // 返回两个大整数之和
+  friend int2048 add(int2048, const int2048 &);
+
+  // 减去一个大整数
+  int2048 &minus(const int2048 &);
+  // 返回两个大整数之差
+  friend int2048 minus(int2048, const int2048 &);
+
+  // ===================================
+  // Integer2
+  // ===================================
+
+  int2048 operator+() const;
+  int2048 operator-() const;
+
+  int2048 &operator=(const int2048 &);
+
+  int2048 &operator+=(const int2048 &);
+  friend int2048 operator+(int2048, const int2048 &);
+
+  int2048 &operator-=(const int2048 &);
+  friend int2048 operator-(int2048, const int2048 &);
+
+  int2048 &operator*=(const int2048 &);
+  friend int2048 operator*(int2048, const int2048 &);
+
+  int2048 &operator/=(const int2048 &);
+  friend int2048 operator/(int2048, const int2048 &);
+
+  int2048 &operator%=(const int2048 &);
+  friend int2048 operator%(int2048, const int2048 &);
+
+  friend std::istream &operator>>(std::istream &, int2048 &);
+  friend std::ostream &operator<<(std::ostream &, const int2048 &);
+
+  friend bool operator==(const int2048 &, const int2048 &);
+  friend bool operator!=(const int2048 &, const int2048 &);
+  friend bool operator<(const int2048 &, const int2048 &);
+  friend bool operator>(const int2048 &, const int2048 &);
+  friend bool operator<=(const int2048 &, const int2048 &);
+  friend bool operator>=(const int2048 &, const int2048 &);
+};
+} // namespace sjtu
+
+#endif
 
 namespace sjtu {
 static const int BASE=10000;static const int BD=4;using std::vector;using std::string;using std::istream;using std::ostream;using std::complex;static void fft(std::vector<complex<double>>& a,bool inv){int n=a.size();static vector<int> rev;static vector<complex<double>> roots{0,1};if((int)rev.size()!=n){int k=__builtin_ctz(n);rev.assign(n,0);for(int i=0;i<n;i++)rev[i]=(rev[i>>1]>>1)|((i&1)<<(k-1));}
@@ -20,51 +117,52 @@ void int2048::divAbs(const int2048&x,const int2048&y,int2048&q,int2048&r){q.d.cl
 int2048 int2048::fromInt(long long v){int2048 r;r.s=0;if(v==0)return r;if(v<0){r.s=-1;v=-v;}else r.s=1;while(v){r.d.push_back((int)(v%BASE));v/=BASE;}return r;}
 
 int2048::int2048(){s=0;}
-int2048::int2048(long long v){*this=fromInt(v);}
-int2048::int2048(const string &str){read(str);}
+int2048::int2048(long long v){*this=fromInt(v);} 
+int2048::int2048(const string &str){read(str);} 
 int2048::int2048(const int2048 &o){d=o.d;s=o.s;}
 
 void int2048::read(const string &str){d.clear();s=0;int i=0;while(i<(int)str.size()&&isspace((unsigned char)str[i]))++i;int neg=0;if(i<(int)str.size()&&(str[i]=='+'||str[i]=='-')){neg=(str[i]=='-');++i;}while(i<(int)str.size()&&str[i]=='0')++i;vector<int> tmp;for(int j=str.size()-1;j>=i;j-=BD){int x=0;int l=std::max(i,j-BD+1);for(int k=l;k<=j;++k)x=x*10+(str[k]-'0');tmp.push_back(x);}d=tmp;trim();if(!d.empty())s=neg?-1:1;}
 void int2048::print(){if(s==0){std::cout<<0;return;}if(s<0)std::cout<<'-';int n=d.size();std::cout<<d.back();for(int i=n-2;i>=0;--i){char buf[8];std::snprintf(buf,sizeof(buf),"%0*d",BD,d[i]);std::cout<<buf;}}
 
 int2048 &int2048::add(const int2048 &o){if(o.s==0)return *this;if(s==0){*this=o;return *this;}if(s==o.s){*this=addAbs(*this,o);s=o.s;return *this;}int c=absCmp(*this,o);if(c==0){d.clear();s=0;return *this;}if(c>0){*this=subAbs(*this,o);}else{*this=subAbs(o,*this);s=o.s;}return *this;}
-int2048 add(int2048 a,const int2048 &b){return a.add(b);}
-int2048 &int2048::minus(const int2048 &o){int2048 t=o; if(t.s) t.s=-t.s; return add(t);}
-int2048 minus(int2048 a,const int2048 &b){return a.minus(b);}
+int2048 add(int2048 a,const int2048 &b){return a.add(b);} 
+int2048 &int2048::minus(const int2048 &o){int2048 t=o; if(t.s) t.s=-t.s; return add(t);} 
+int2048 minus(int2048 a,const int2048 &b){return a.minus(b);} 
 
-int2048 int2048::operator+() const{return *this;}
-int2048 int2048::operator-() const{int2048 r=*this;if(r.s)r.s=-r.s;return r;}
-int2048 &int2048::operator=(const int2048 &o){if(this==&o)return *this;d=o.d;s=o.s;return *this;}
+int2048 int2048::operator+() const{return *this;} 
+int2048 int2048::operator-() const{int2048 r=*this;if(r.s)r.s=-r.s;return r;} 
+int2048 &int2048::operator=(const int2048 &o){if(this==&o)return *this;d=o.d;s=o.s;return *this;} 
 
-int2048 &int2048::operator+=(const int2048 &o){return add(o);}
-int2048 operator+(int2048 a,const int2048 &b){return a+=b;}
-int2048 &int2048::operator-=(const int2048 &o){return (*this)+=(-o);}
-int2048 operator-(int2048 a,const int2048 &b){return a-=b;}
+int2048 &int2048::operator+=(const int2048 &o){return add(o);} 
+int2048 operator+(int2048 a,const int2048 &b){return a+=b;} 
+int2048 &int2048::operator-=(const int2048 &o){return (*this)+=(-o);} 
+int2048 operator-(int2048 a,const int2048 &b){return a-=b;} 
 
-int2048 &int2048::operator*=(const int2048 &o){if(s==0||o.s==0){d.clear();s=0;return *this;}int signRes=s*o.s;int2048 A=*this,B=o;A.s=B.s=1;*this=mulAbs(A,B);s=signRes;trim();return *this;}
-int2048 operator*(int2048 a,const int2048 &b){return a*=b;}
+int2048 &int2048::operator*=(const int2048 &o){if(s==0||o.s==0){d.clear();s=0;return *this;}int signRes=s*o.s;int2048 A=*this,B=o;A.s=B.s=1;*this=mulAbs(A,B);s=signRes;trim();return *this;} 
+int2048 operator*(int2048 a,const int2048 &b){return a*=b;} 
 
 int2048 &int2048::operator/=(const int2048 &o){int sa=s,sb=o.s;if(sb==0){d.clear();s=0;return *this;}if(sa==0){return *this;}int2048 A=*this,B=o;A.s=B.s=1;int2048 q,r;divAbs(A,B,q,r);if(sa==sb){*this=q; if(!d.empty())s=1; else s=0;}
 else{ if(r.s==0){*this=q; s = q.d.empty()?0:-1;} else { // floor adjust: q = -(q0+1)
  if(q.s==0){q=fromInt(1);} else {int2048 one=fromInt(1); q=addAbs(q,one);} *this=q; s=-1; }
 }
 return *this;}
-int2048 operator/(int2048 a,const int2048 &b){return a/=b;}
+int2048 operator/(int2048 a,const int2048 &b){return a/=b;} 
 
 int2048 &int2048::operator%=(const int2048 &o){int sa=s,sb=o.s;int2048 A=*this,B=o;A.s=B.s=1;int2048 q,r;divAbs(A,B,q,r);if(sa==sb){*this=r; s=r.s;}
 else{ if(r.s==0){d.clear();s=0;} else { // r = |b| - r
  int2048 bb=subAbs(B,r); *this=bb; s=sb>0?1:-1; }
 } return *this;}
-int2048 operator%(int2048 a,const int2048 &b){return a%=b;}
+int2048 operator%(int2048 a,const int2048 &b){return a%=b;} 
 
-istream &operator>>(istream &is,int2048 &x){string s;is>>s;x.read(s);return is;}
-ostream &operator<<(ostream &os,const int2048 &x){if(x.s==0){os<<0;return os;}if(x.s<0)os<<'-';os<<x.d.back();for(int i=(int)x.d.size()-2;i>=0;--i){char buf[8];std::snprintf(buf,sizeof(buf),"%0*d",BD,x.d[i]);os<<buf;}return os;}
+istream &operator>>(istream &is,int2048 &x){string s;is>>s;x.read(s);return is;} 
+ostream &operator<<(ostream &os,const int2048 &x){if(x.s==0){os<<0;return os;}if(x.s<0)os<<'-';os<<x.d.back();for(int i=(int)x.d.size()-2;i>=0;--i){char buf[8];std::snprintf(buf,sizeof(buf),"%0*d",BD,x.d[i]);os<<buf;}return os;} 
 
-bool operator==(const int2048 &a,const int2048 &b){return a.s==b.s&&a.d==b.d;}
-bool operator!=(const int2048 &a,const int2048 &b){return !(a==b);}
-bool operator<(const int2048 &a,const int2048 &b){if(a.s!=b.s)return a.s<b.s; if(a.s==0)return false; int c=int2048::absCmp(a,b); return a.s>0?c<0:c>0;}
-bool operator>(const int2048 &a,const int2048 &b){return b<a;}
-bool operator<=(const int2048 &a,const int2048 &b){return !(b<a);}
-bool operator>=(const int2048 &a,const int2048 &b){return !(a<b);}
+bool operator==(const int2048 &a,const int2048 &b){return a.s==b.s&&a.d==b.d;} 
+bool operator!=(const int2048 &a,const int2048 &b){return !(a==b);} 
+bool operator<(const int2048 &a,const int2048 &b){if(a.s!=b.s)return a.s<b.s; if(a.s==0)return false; int c=int2048::absCmp(a,b); return a.s>0?c<0:c>0;} 
+bool operator>(const int2048 &a,const int2048 &b){return b<a;} 
+bool operator<=(const int2048 &a,const int2048 &b){return !(b<a);} 
+bool operator>=(const int2048 &a,const int2048 &b){return !(a<b);} 
 
 } // namespace sjtu
+
