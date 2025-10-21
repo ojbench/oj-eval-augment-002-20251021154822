@@ -24,7 +24,7 @@ int2048::int2048(long long v){*this=fromInt(v);}
 int2048::int2048(const string &str){read(str);}
 int2048::int2048(const int2048 &o){d=o.d;s=o.s;}
 
-void int2048::read(const string &str){d.clear();s=0;int i=0;while(i<(int)str.size()&&isspace((unsigned char)str[i]))++i;int neg=0;if(i<(int)str.size()&&(str[i]=='+'||str[i]=='-')){neg=(str[i]=='-');++i;}while(i<(int)str.size()&&str[i]=='0')++i;vector<int> tmp;for(int j=str.size()-1;j>=i;j-=BD){int x=0;int l=std::max(i,j-BD+1);for(int k=l;k<=j;++k)x=x*10+(str[k]-'0');tmp.push_back(x);}d=tmp;trim();if(!d.empty())s=neg?-1:1;}
+void int2048::read(const string &str){d.clear();s=0;int n=str.size();int i=0;while(i<n&&isspace((unsigned char)str[i]))++i;int r=n-1;while(r>=i&&isspace((unsigned char)str[r]))--r;int neg=0;if(i<=r&&(str[i]=='+'||str[i]=='-')){neg=(str[i]=='-');++i;}while(i<=r&&str[i]=='0')++i;vector<int> tmp;for(int j=r;j>=i;j-=BD){int x=0;int l=std::max(i,j-BD+1);for(int k=l;k<=j;++k)x=x*10+(str[k]-'0');tmp.push_back(x);}d=tmp;trim();if(!d.empty())s=neg?-1:1;}
 void int2048::print(){if(s==0){std::cout<<0;return;}if(s<0)std::cout<<'-';int n=d.size();std::cout<<d.back();for(int i=n-2;i>=0;--i){char buf[8];std::snprintf(buf,sizeof(buf),"%0*d",BD,d[i]);std::cout<<buf;}}
 
 int2048 &int2048::add(const int2048 &o){if(o.s==0)return *this;if(s==0){*this=o;return *this;}if(s==o.s){*this=addAbs(*this,o);s=o.s;return *this;}int c=absCmp(*this,o);if(c==0){d.clear();s=0;return *this;}if(c>0){int ss=s; *this=subAbs(*this,o); s=ss;}else{*this=subAbs(o,*this);s=o.s;}return *this;}
